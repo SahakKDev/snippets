@@ -1,23 +1,28 @@
 import { prisma } from "@/db";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import * as actions from "@/actions";
 
-interface Props {
-  params: { slug: string };
-}
+type Props = {
+  params: {
+    id: string;
+  };
+};
 
 export default async function SnippetShowPage({ params }: Props) {
-  const { slug } = params;
-  await new Promise((res) => setTimeout(res, 2000));
-  const snippet = await prisma.snippet.findFirst({
-    where: {
-      id: +slug,
-    },
+  const { id: snippetId } = params;
+
+  await new Promise((r) => setTimeout(r, 500));
+
+  const snippet = await prisma.snippet.findUnique({
+    where: { id: +snippetId },
   });
 
   if (!snippet) {
     notFound();
   }
+
+  const deleteSnippetAction = actions.deleteSnippet.bind(null, +snippetId);
 
   return (
     <div>
@@ -25,15 +30,18 @@ export default async function SnippetShowPage({ params }: Props) {
         <h1 className="text-xl font-bold">{snippet.title}</h1>
         <div className="flex gap-4">
           <Link
-            className="p-2 border rounded"
             href={`/snippets/${snippet.id}/edit`}
+            className="p-2 border rounded"
           >
             Edit
           </Link>
-          <button className="p-2 border rounded">Delete</button>
+          <form action={deleteSnippetAction}>
+            <button className="p-2 border rounded">Delete</button>
+          </form>
         </div>
       </div>
-      <pre className="p-3 border bg-gray-200 border-gray-200">
+
+      <pre className="p-3 border rounded bg-gray-200 border-gray-200">
         <code>{snippet.code}</code>
       </pre>
     </div>
