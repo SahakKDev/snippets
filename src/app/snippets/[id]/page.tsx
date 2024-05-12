@@ -47,3 +47,13 @@ export default async function SnippetShowPage({ params }: Props) {
     </div>
   );
 }
+
+export async function generateStaticParams() {
+  const snippets = await prisma.snippet.findMany();
+
+  return snippets.map((snippet) => {
+    return {
+      id: snippet.id.toString(),
+    };
+  });
+}
